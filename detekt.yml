@@ -1,0 +1,12 @@
+style:
+  MagicNumber:
+    active: true
+complexity:
+  LongParameterList:
+    active: true
+performance:
+  SpreadOperator:
+    active: true
+comments:
+  UndocumentedPublicClass:
+    active: false

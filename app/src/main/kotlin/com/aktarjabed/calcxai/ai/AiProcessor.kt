@@ -1,9 +1,9 @@
 package com.aktarjabed.calcxai.ai
 
 import android.content.Context
-import android.util.Log
 import com.aktarjabed.calcxai.models.CalculationType
 import com.aktarjabed.calcxai.models.FinanceParams
+import com.aktarjabed.calcxai.utils.L
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.regex.Pattern
@@ -33,7 +33,7 @@ class AiProcessor(private val context: Context) {
                     success = true
                 )
             } catch (e: Exception) {
-                Log.e("AiProcessor", "Error processing input: ${e.message}")
+                L.e("AiProcessor", "Error processing input: ${e.message}")
                 AiResult(
                     intent = CalculationType.BASIC,
                     params = FinanceParams(),
@@ -57,7 +57,7 @@ class AiProcessor(private val context: Context) {
                 else -> calculateBasic(params)
             }
         } catch (e: Exception) {
-            Log.e("AiProcessor", "Calculation error: ${e.message}")
+            L.e("AiProcessor", "Calculation error: ${e.message}")
             CalculationResult(0.0, 0.0, 0.0, 0.0)
         }
     }

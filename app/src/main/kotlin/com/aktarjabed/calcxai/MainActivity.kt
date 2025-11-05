@@ -12,10 +12,21 @@ import androidx.core.view.WindowCompat
 import com.aktarjabed.calcxai.ui.CalcXApp
 import com.aktarjabed.calcxai.ui.theme.CalcXAITheme
 
+import android.os.StrictMode
+import com.aktarjabed.calcxai.BuildConfig
+
 class MainActivity : ComponentActivity() {
-override fun onCreate(savedInstanceState: Bundle?) {
-super.onCreate(savedInstanceState)
-enableEdgeToEdge()
+    override fun onCreate(savedInstanceState: Bundle?) {
+        if (BuildConfig.DEBUG) {
+            StrictMode.setThreadPolicy(
+                StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().build()
+            )
+            StrictMode.setVmPolicy(
+                StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build()
+            )
+        }
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
 WindowCompat.setDecorFitsSystemWindows(window, false)
 setContent {
 CalcXAITheme {
