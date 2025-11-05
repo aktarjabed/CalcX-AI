@@ -15,7 +15,7 @@ class AiProcessor(private val context: Context) {
     private val aiExplainer = AiExplainer()
 
     suspend fun processUserInput(input: String): AiResult {
-        return withContext(Dispatchers.Default) {
+        return withContext(Dispatchers.IO) {
             try {
                 // Step 1: Detect intent using hybrid approach
                 val intent = intentDetector.detectIntent(input)
@@ -32,8 +32,16 @@ class AiProcessor(private val context: Context) {
                     explanation = explanation,
                     success = true
                 )
+            } catch (e: java.io.IOException) {
+                Log.e("AiProcessor", "Network error processing input", e)
+                AiResult(
+                    intent = CalculationType.BASIC,
+                    params = FinanceParams(),
+                    explanation = "There was a network error. Please check your connection and try again.",
+                    success = false
+                )
             } catch (e: Exception) {
-                Log.e("AiProcessor", "Error processing input: ${e.message}")
+                Log.e("AiProcessor", "Unexpected error processing input", e)
                 AiResult(
                     intent = CalculationType.BASIC,
                     params = FinanceParams(),
@@ -56,8 +64,11 @@ class AiProcessor(private val context: Context) {
                 CalculationType.RD -> calculateRD(params)
                 else -> calculateBasic(params)
             }
+        } catch (e: ArithmeticException) {
+            Log.e("AiProcessor", "Arithmetic error in calculation", e)
+            CalculationResult(0.0, 0.0, 0.0, 0.0)
         } catch (e: Exception) {
-            Log.e("AiProcessor", "Calculation error: ${e.message}")
+            Log.e("AiProcessor", "Unexpected error in calculation", e)
             CalculationResult(0.0, 0.0, 0.0, 0.0)
         }
     }
