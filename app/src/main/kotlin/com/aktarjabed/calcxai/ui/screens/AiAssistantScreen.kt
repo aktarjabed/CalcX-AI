@@ -38,23 +38,27 @@ val speechManager = remember { SpeechInputManager(context) }
 val isListening by speechManager.isListening.collectAsState()
 
 val permissionLauncher = rememberLauncherForActivityResult(
-ActivityResultContracts.RequestPermission()
+    ActivityResultContracts.RequestPermission()
 ) { granted ->
-if (granted) {
-coroutineScope.launch {
-speechManager.startListening(
-onResult = { result ->
-viewModel.updateUserInput(result)
-viewModel.processUserInput()
-},
-onError = { error ->
-viewModel.addMessage("🎤 Speech Error: $error", isUser = false)
-}
-)
-}
-} else {
-viewModel.addMessage("❌ Microphone permission is required for voice input", isUser = false)
-}
+    if (granted) {
+        coroutineScope.launch {
+            try {
+                speechManager.startListening(
+                    onResult = { result ->
+                        viewModel.updateUserInput(result)
+                        viewModel.processUserInput()
+                    },
+                    onError = { error ->
+                        viewModel.addMessage("🎤 Speech Error: $error", isUser = false)
+                    }
+                )
+            } catch (e: Exception) {
+                viewModel.addMessage("🎤 Audio recording failed: ${e.message}", isUser = false)
+            }
+        }
+    } else {
+        viewModel.addMessage("❌ Microphone permission is required for voice input", isUser = false)
+    }
 }
 
 Column(
@@ -115,14 +119,20 @@ tint = if (isListening) MaterialTheme.colorScheme.primary else MaterialTheme.col
 }
 
 IconButton(
-onClick = { viewModel.processUserInput() },
-enabled = state.userInput.isNotEmpty() && !state.isProcessing && !isListening
+    onClick = {
+        if (state.userInput.isNotBlank()) {
+            viewModel.processUserInput()
+        } else {
+            android.widget.Toast.makeText(context, "Please enter a message", android.widget.Toast.LENGTH_SHORT).show()
+        }
+    },
+    enabled = !state.isProcessing && !isListening
 ) {
-Icon(
-imageVector = Icons.Default.Send,
-contentDescription = "Send",
-tint = MaterialTheme.colorScheme.primary
-)
+    Icon(
+        imageVector = Icons.Default.Send,
+        contentDescription = "Send",
+        tint = if (state.userInput.isNotBlank()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+    )
 }
 }
 

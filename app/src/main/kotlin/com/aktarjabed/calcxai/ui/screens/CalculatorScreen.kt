@@ -19,8 +19,6 @@ import com.aktarjabed.calcxai.models.CalculationType
 import com.aktarjabed.calcxai.models.FinanceParams
 import com.aktarjabed.calcxai.ui.components.CalculationResultCard
 import com.aktarjabed.calcxai.ui.viewmodels.CalculatorViewModel
-import java.text.NumberFormat
-import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -141,15 +139,17 @@ fun CalculationTypeSelector(
     }
 }
 
+import com.aktarjabed.calcxai.ui.components.LabeledTextField
 @Composable
 fun SIPCalculatorForm(
     params: FinanceParams,
     onParamsChange: (FinanceParams) -> Unit,
     onCalculate: () -> Unit
 ) {
-    var monthlyInvestment by remember { mutableStateOf(params.monthlyInvestment.toString()) }
-    var years by remember { mutableStateOf(params.years.toString()) }
-    var rate by remember { mutableStateOf(params.rate.toString()) }
+    val context = LocalContext.current
+    var monthlyInvestment by remember { mutableStateOf(if (params.monthlyInvestment > 0) params.monthlyInvestment.toString() else "") }
+    var years by remember { mutableStateOf(if (params.years > 0) params.years.toString() else "") }
+    var rate by remember { mutableStateOf(if (params.rate > 0) params.rate.toString() else "") }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -160,47 +160,44 @@ fun SIPCalculatorForm(
             fontWeight = FontWeight.Bold
         )
 
-        OutlinedTextField(
-            value = monthlyInvestment,
-            onValueChange = {
+        LabeledTextField(
+            label = "Monthly Investment (₹)",
+            text = monthlyInvestment,
+            onTextChange = {
                 monthlyInvestment = it
                 onParamsChange(params.copy(monthlyInvestment = it.toDoubleOrNull() ?: 0.0))
             },
-            label = { Text("Monthly Investment (₹)") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            )
+            keyboardType = KeyboardType.Number
         )
 
-        OutlinedTextField(
-            value = years,
-            onValueChange = {
+        LabeledTextField(
+            label = "Investment Period (Years)",
+            text = years,
+            onTextChange = {
                 years = it
                 onParamsChange(params.copy(years = it.toIntOrNull() ?: 0))
             },
-            label = { Text("Investment Period (Years)") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            )
+            keyboardType = KeyboardType.Number
         )
 
-        OutlinedTextField(
-            value = rate,
-            onValueChange = {
+        LabeledTextField(
+            label = "Expected Return Rate (%)",
+            text = rate,
+            onTextChange = {
                 rate = it
                 onParamsChange(params.copy(rate = it.toDoubleOrNull() ?: 0.0))
             },
-            label = { Text("Expected Return Rate (%)") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            )
+            keyboardType = KeyboardType.Number
         )
 
         Button(
-            onClick = onCalculate,
+            onClick = {
+                if (monthlyInvestment.toDoubleOrNull() == null || years.toIntOrNull() == null || rate.toDoubleOrNull() == null) {
+                    android.widget.Toast.makeText(context, "Please enter valid numbers", android.widget.Toast.LENGTH_SHORT).show()
+                    return@Button
+                }
+                onCalculate()
+            },
             modifier = Modifier.align(Alignment.End)
         ) {
             Text("Calculate")
@@ -236,10 +233,11 @@ fun SWPCalculatorForm(
     onParamsChange: (FinanceParams) -> Unit,
     onCalculate: () -> Unit
 ) {
-    var corpus by remember { mutableStateOf((params.corpus ?: 0.0).toString()) }
-    var years by remember { mutableStateOf(params.years.toString()) }
-    var rate by remember { mutableStateOf(params.rate.toString()) }
-    var monthlyWithdrawal by remember { mutableStateOf(params.monthlyWithdrawal.toString()) }
+    val context = LocalContext.current
+    var corpus by remember { mutableStateOf(if (params.corpus ?: 0.0 > 0.0) params.corpus.toString() else "") }
+    var years by remember { mutableStateOf(if (params.years > 0) params.years.toString() else "") }
+    var rate by remember { mutableStateOf(if (params.rate > 0) params.rate.toString() else "") }
+    var monthlyWithdrawal by remember { mutableStateOf(if (params.monthlyWithdrawal > 0) params.monthlyWithdrawal.toString() else "") }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -250,60 +248,54 @@ fun SWPCalculatorForm(
             fontWeight = FontWeight.Bold
         )
 
-        OutlinedTextField(
-            value = corpus,
-            onValueChange = {
+        LabeledTextField(
+            label = "Initial Corpus (₹)",
+            text = corpus,
+            onTextChange = {
                 corpus = it
                 onParamsChange(params.copy(corpus = it.toDoubleOrNull() ?: 0.0))
             },
-            label = { Text("Initial Corpus (₹)") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            )
+            keyboardType = KeyboardType.Number
         )
 
-        OutlinedTextField(
-            value = years,
-            onValueChange = {
+        LabeledTextField(
+            label = "Withdrawal Period (Years)",
+            text = years,
+            onTextChange = {
                 years = it
                 onParamsChange(params.copy(years = it.toIntOrNull() ?: 0))
             },
-            label = { Text("Withdrawal Period (Years)") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            )
+            keyboardType = KeyboardType.Number
         )
 
-        OutlinedTextField(
-            value = rate,
-            onValueChange = {
+        LabeledTextField(
+            label = "Expected Return Rate (%)",
+            text = rate,
+            onTextChange = {
                 rate = it
                 onParamsChange(params.copy(rate = it.toDoubleOrNull() ?: 0.0))
             },
-            label = { Text("Expected Return Rate (%)") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            )
+            keyboardType = KeyboardType.Number
         )
 
-        OutlinedTextField(
-            value = monthlyWithdrawal,
-            onValueChange = {
+        LabeledTextField(
+            label = "Monthly Withdrawal (₹) - Optional",
+            text = monthlyWithdrawal,
+            onTextChange = {
                 monthlyWithdrawal = it
                 onParamsChange(params.copy(monthlyWithdrawal = it.toDoubleOrNull() ?: 0.0))
             },
-            label = { Text("Monthly Withdrawal (₹) - Optional") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            )
+            keyboardType = KeyboardType.Number
         )
 
         Button(
-            onClick = onCalculate,
+            onClick = {
+                if (corpus.toDoubleOrNull() == null || years.toIntOrNull() == null || rate.toDoubleOrNull() == null) {
+                    android.widget.Toast.makeText(context, "Please enter valid numbers", android.widget.Toast.LENGTH_SHORT).show()
+                    return@Button
+                }
+                onCalculate()
+            },
             modifier = Modifier.align(Alignment.End)
         ) {
             Text("Calculate")
@@ -339,9 +331,10 @@ fun EMICalculatorForm(
     onParamsChange: (FinanceParams) -> Unit,
     onCalculate: () -> Unit
 ) {
-    var principal by remember { mutableStateOf(params.principal.toString()) }
-    var years by remember { mutableStateOf(params.years.toString()) }
-    var rate by remember { mutableStateOf(params.rate.toString()) }
+    val context = LocalContext.current
+    var principal by remember { mutableStateOf(if (params.principal > 0) params.principal.toString() else "") }
+    var years by remember { mutableStateOf(if (params.years > 0) params.years.toString() else "") }
+    var rate by remember { mutableStateOf(if (params.rate > 0) params.rate.toString() else "") }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -352,47 +345,44 @@ fun EMICalculatorForm(
             fontWeight = FontWeight.Bold
         )
 
-        OutlinedTextField(
-            value = principal,
-            onValueChange = {
+        LabeledTextField(
+            label = "Loan Amount (₹)",
+            text = principal,
+            onTextChange = {
                 principal = it
                 onParamsChange(params.copy(principal = it.toDoubleOrNull() ?: 0.0))
             },
-            label = { Text("Loan Amount (₹)") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            )
+            keyboardType = KeyboardType.Number
         )
 
-        OutlinedTextField(
-            value = years,
-            onValueChange = {
+        LabeledTextField(
+            label = "Loan Tenure (Years)",
+            text = years,
+            onTextChange = {
                 years = it
                 onParamsChange(params.copy(years = it.toIntOrNull() ?: 0))
             },
-            label = { Text("Loan Tenure (Years)") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            )
+            keyboardType = KeyboardType.Number
         )
 
-        OutlinedTextField(
-            value = rate,
-            onValueChange = {
+        LabeledTextField(
+            label = "Interest Rate (%)",
+            text = rate,
+            onTextChange = {
                 rate = it
                 onParamsChange(params.copy(rate = it.toDoubleOrNull() ?: 0.0))
             },
-            label = { Text("Interest Rate (%)") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            )
+            keyboardType = KeyboardType.Number
         )
 
         Button(
-            onClick = onCalculate,
+            onClick = {
+                if (principal.toDoubleOrNull() == null || years.toIntOrNull() == null || rate.toDoubleOrNull() == null) {
+                    android.widget.Toast.makeText(context, "Please enter valid numbers", android.widget.Toast.LENGTH_SHORT).show()
+                    return@Button
+                }
+                onCalculate()
+            },
             modifier = Modifier.align(Alignment.End)
         ) {
             Text("Calculate")
@@ -428,9 +418,10 @@ fun CAGRCalculatorForm(
     onParamsChange: (FinanceParams) -> Unit,
     onCalculate: () -> Unit
 ) {
-    var beginningValue by remember { mutableStateOf(params.beginningValue.toString()) }
-    var endingValue by remember { mutableStateOf(params.endingValue.toString()) }
-    var years by remember { mutableStateOf(params.years.toString()) }
+    val context = LocalContext.current
+    var beginningValue by remember { mutableStateOf(if (params.beginningValue > 0) params.beginningValue.toString() else "") }
+    var endingValue by remember { mutableStateOf(if (params.endingValue > 0) params.endingValue.toString() else "") }
+    var years by remember { mutableStateOf(if (params.years > 0) params.years.toString() else "") }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -441,47 +432,44 @@ fun CAGRCalculatorForm(
             fontWeight = FontWeight.Bold
         )
 
-        OutlinedTextField(
-            value = beginningValue,
-            onValueChange = {
+        LabeledTextField(
+            label = "Beginning Value (₹)",
+            text = beginningValue,
+            onTextChange = {
                 beginningValue = it
                 onParamsChange(params.copy(beginningValue = it.toDoubleOrNull() ?: 0.0))
             },
-            label = { Text("Beginning Value (₹)") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            )
+            keyboardType = KeyboardType.Number
         )
 
-        OutlinedTextField(
-            value = endingValue,
-            onValueChange = {
+        LabeledTextField(
+            label = "Ending Value (₹)",
+            text = endingValue,
+            onTextChange = {
                 endingValue = it
                 onParamsChange(params.copy(endingValue = it.toDoubleOrNull() ?: 0.0))
             },
-            label = { Text("Ending Value (₹)") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            )
+            keyboardType = KeyboardType.Number
         )
 
-        OutlinedTextField(
-            value = years,
-            onValueChange = {
+        LabeledTextField(
+            label = "Investment Period (Years)",
+            text = years,
+            onTextChange = {
                 years = it
                 onParamsChange(params.copy(years = it.toIntOrNull() ?: 0))
             },
-            label = { Text("Investment Period (Years)") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            )
+            keyboardType = KeyboardType.Number
         )
 
         Button(
-            onClick = onCalculate,
+            onClick = {
+                if (beginningValue.toDoubleOrNull() == null || endingValue.toDoubleOrNull() == null || years.toIntOrNull() == null) {
+                    android.widget.Toast.makeText(context, "Please enter valid numbers", android.widget.Toast.LENGTH_SHORT).show()
+                    return@Button
+                }
+                onCalculate()
+            },
             modifier = Modifier.align(Alignment.End)
         ) {
             Text("Calculate")
@@ -517,9 +505,10 @@ fun LumpsumCalculatorForm(
     onParamsChange: (FinanceParams) -> Unit,
     onCalculate: () -> Unit
 ) {
-    var principal by remember { mutableStateOf(params.principal.toString()) }
-    var years by remember { mutableStateOf(params.years.toString()) }
-    var rate by remember { mutableStateOf(params.rate.toString()) }
+    val context = LocalContext.current
+    var principal by remember { mutableStateOf(if (params.principal > 0) params.principal.toString() else "") }
+    var years by remember { mutableStateOf(if (params.years > 0) params.years.toString() else "") }
+    var rate by remember { mutableStateOf(if (params.rate > 0) params.rate.toString() else "") }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -530,47 +519,44 @@ fun LumpsumCalculatorForm(
             fontWeight = FontWeight.Bold
         )
 
-        OutlinedTextField(
-            value = principal,
-            onValueChange = {
+        LabeledTextField(
+            label = "Investment Amount (₹)",
+            text = principal,
+            onTextChange = {
                 principal = it
                 onParamsChange(params.copy(principal = it.toDoubleOrNull() ?: 0.0))
             },
-            label = { Text("Investment Amount (₹)") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            )
+            keyboardType = KeyboardType.Number
         )
 
-        OutlinedTextField(
-            value = years,
-            onValueChange = {
+        LabeledTextField(
+            label = "Investment Period (Years)",
+            text = years,
+            onTextChange = {
                 years = it
                 onParamsChange(params.copy(years = it.toIntOrNull() ?: 0))
             },
-            label = { Text("Investment Period (Years)") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            )
+            keyboardType = KeyboardType.Number
         )
 
-        OutlinedTextField(
-            value = rate,
-            onValueChange = {
+        LabeledTextField(
+            label = "Expected Return Rate (%)",
+            text = rate,
+            onTextChange = {
                 rate = it
                 onParamsChange(params.copy(rate = it.toDoubleOrNull() ?: 0.0))
             },
-            label = { Text("Expected Return Rate (%)") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            )
+            keyboardType = KeyboardType.Number
         )
 
         Button(
-            onClick = onCalculate,
+            onClick = {
+                if (principal.toDoubleOrNull() == null || years.toIntOrNull() == null || rate.toDoubleOrNull() == null) {
+                    android.widget.Toast.makeText(context, "Please enter valid numbers", android.widget.Toast.LENGTH_SHORT).show()
+                    return@Button
+                }
+                onCalculate()
+            },
             modifier = Modifier.align(Alignment.End)
         ) {
             Text("Calculate")
@@ -606,9 +592,10 @@ fun FDCalculatorForm(
     onParamsChange: (FinanceParams) -> Unit,
     onCalculate: () -> Unit
 ) {
-    var principal by remember { mutableStateOf(params.principal.toString()) }
-    var years by remember { mutableStateOf(params.years.toString()) }
-    var rate by remember { mutableStateOf(params.rate.toString()) }
+    val context = LocalContext.current
+    var principal by remember { mutableStateOf(if (params.principal > 0) params.principal.toString() else "") }
+    var years by remember { mutableStateOf(if (params.years > 0) params.years.toString() else "") }
+    var rate by remember { mutableStateOf(if (params.rate > 0) params.rate.toString() else "") }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -619,47 +606,44 @@ fun FDCalculatorForm(
             fontWeight = FontWeight.Bold
         )
 
-        OutlinedTextField(
-            value = principal,
-            onValueChange = {
+        LabeledTextField(
+            label = "Deposit Amount (₹)",
+            text = principal,
+            onTextChange = {
                 principal = it
                 onParamsChange(params.copy(principal = it.toDoubleOrNull() ?: 0.0))
             },
-            label = { Text("Deposit Amount (₹)") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            )
+            keyboardType = KeyboardType.Number
         )
 
-        OutlinedTextField(
-            value = years,
-            onValueChange = {
+        LabeledTextField(
+            label = "Deposit Period (Years)",
+            text = years,
+            onTextChange = {
                 years = it
                 onParamsChange(params.copy(years = it.toIntOrNull() ?: 0))
             },
-            label = { Text("Deposit Period (Years)") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            )
+            keyboardType = KeyboardType.Number
         )
 
-        OutlinedTextField(
-            value = rate,
-            onValueChange = {
+        LabeledTextField(
+            label = "Interest Rate (%)",
+            text = rate,
+            onTextChange = {
                 rate = it
                 onParamsChange(params.copy(rate = it.toDoubleOrNull() ?: 0.0))
             },
-            label = { Text("Interest Rate (%)") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            )
+            keyboardType = KeyboardType.Number
         )
 
         Button(
-            onClick = onCalculate,
+            onClick = {
+                if (principal.toDoubleOrNull() == null || years.toIntOrNull() == null || rate.toDoubleOrNull() == null) {
+                    android.widget.Toast.makeText(context, "Please enter valid numbers", android.widget.Toast.LENGTH_SHORT).show()
+                    return@Button
+                }
+                onCalculate()
+            },
             modifier = Modifier.align(Alignment.End)
         ) {
             Text("Calculate")
@@ -695,9 +679,10 @@ fun RDCalculatorForm(
     onParamsChange: (FinanceParams) -> Unit,
     onCalculate: () -> Unit
 ) {
-    var monthlyInvestment by remember { mutableStateOf(params.monthlyInvestment.toString()) }
-    var years by remember { mutableStateOf(params.years.toString()) }
-    var rate by remember { mutableStateOf(params.rate.toString()) }
+    val context = LocalContext.current
+    var monthlyInvestment by remember { mutableStateOf(if (params.monthlyInvestment > 0) params.monthlyInvestment.toString() else "") }
+    var years by remember { mutableStateOf(if (params.years > 0) params.years.toString() else "") }
+    var rate by remember { mutableStateOf(if (params.rate > 0) params.rate.toString() else "") }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -708,47 +693,44 @@ fun RDCalculatorForm(
             fontWeight = FontWeight.Bold
         )
 
-        OutlinedTextField(
-            value = monthlyInvestment,
-            onValueChange = {
+        LabeledTextField(
+            label = "Monthly Investment (₹)",
+            text = monthlyInvestment,
+            onTextChange = {
                 monthlyInvestment = it
                 onParamsChange(params.copy(monthlyInvestment = it.toDoubleOrNull() ?: 0.0))
             },
-            label = { Text("Monthly Investment (₹)") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            )
+            keyboardType = KeyboardType.Number
         )
 
-        OutlinedTextField(
-            value = years,
-            onValueChange = {
+        LabeledTextField(
+            label = "Investment Period (Years)",
+            text = years,
+            onTextChange = {
                 years = it
                 onParamsChange(params.copy(years = it.toIntOrNull() ?: 0))
             },
-            label = { Text("Investment Period (Years)") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            )
+            keyboardType = KeyboardType.Number
         )
 
-        OutlinedTextField(
-            value = rate,
-            onValueChange = {
+        LabeledTextField(
+            label = "Interest Rate (%)",
+            text = rate,
+            onTextChange = {
                 rate = it
                 onParamsChange(params.copy(rate = it.toDoubleOrNull() ?: 0.0))
             },
-            label = { Text("Interest Rate (%)") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            )
+            keyboardType = KeyboardType.Number
         )
 
         Button(
-            onClick = onCalculate,
+            onClick = {
+                if (monthlyInvestment.toDoubleOrNull() == null || years.toIntOrNull() == null || rate.toDoubleOrNull() == null) {
+                    android.widget.Toast.makeText(context, "Please enter valid numbers", android.widget.Toast.LENGTH_SHORT).show()
+                    return@Button
+                }
+                onCalculate()
+            },
             modifier = Modifier.align(Alignment.End)
         ) {
             Text("Calculate")
